@@ -46,7 +46,7 @@ layout(set = 1, binding = 3) uniform sampler2D gVisibilitySampler;
 layout(set = 1, binding = 4) uniform sampler2D gDepthSampler;
 
 #define PI 3.141592653589793
-#define NUM_SAMPLES 50
+#define NUM_SAMPLES 20
 #define LIGHT_SIZE 0.004
 
 float rand_1to1(float x) { 
@@ -59,7 +59,6 @@ float rand_2to1(vec2 uv) {
 
 float randFloat(inout float seed) { 
     seed = fract(sin(seed)*10000.0);
-    seed *= seed;
 	return fract(sin(seed)*10000.0);
 
 }
@@ -100,9 +99,19 @@ vec3 SampleHemisphereCos(inout float seed, out float pdf) {
   vec2 uv = randVec2(seed);
   float z = sqrt(1.0 - uv.x);
   float r = sqrt(1.0 - z * z);
-  float phi = uv.y * PI * 2;
-  vec3 dir = vec3(r * cos(phi), r * sin(phi), z);
+  float phi = uv.y * PI * 2.0;
+  vec3 dir = vec3(r * cos(phi), z, r * sin(phi));
   pdf = z / PI;
+  return dir;
+}
+
+vec3 SampleHemisphereLobe(inout float seed, out float pdf) {
+  vec2 uv = randVec2(seed);
+  float z = pow(uv.x, 1 / 12.0);
+  float r = sqrt(1.0 - z * z);
+  float phi = uv.y * PI * 2;
+  vec3 dir = vec3(r * cos(phi), z, r * sin(phi));
+  pdf = 12.0 *  pow(dot(normalize(dir),vec3(0.0 ,1.0, 0.0)), 11.0)/ (2.0 * PI);
   return dir;
 }
 
@@ -112,7 +121,7 @@ vec3 reflectDir(vec3 wi, vec3 N) {
 
 float fresnelSchlick( vec3 wo, vec3 N) {
 		float cos = dot(wo, N);
-		if (cos < 0.0) return 0.0;
+		if (cos < 0.1) return 0.0;
 		float n1 = 1.0f;
 		float n2 = fragIor;
 		float R0 = pow((n1 - n2) / (n1 + n2), 2.0);
@@ -193,47 +202,37 @@ float PCSS(sampler2D shadowMapSampler, vec4 shadow_map_coord, float bias){
   return visibility;
 }
 
-vec3 blinnPhong(){
-    vec3 color;
-    if (fragTexIdx >= 0)
-        color = texture(texSampler[fragTexIdx], fragTexCoord).xyz;
-    else
-        color = fragColor ;
-    vec3 ambient = 0.05 * color;
 
-    vec3 light_coff = ubo.light_emit / pow(length(ubo.camera_position - fragPosition.xyz), 2.0);
-    vec3 light_vector = normalize(lightPosition.xyz - fragPosition.xyz);
-    vec3 normal_vector = normalize(fragNormal); 
-    float cos = max(0.0, dot(normal_vector, light_vector));
-    vec3 diffuse = color * light_coff  * cos;
+bool RayMarch(vec3 ori, vec3 dir, out vec2 hitPosUV, out float visibility) {
 
-    vec3 view_vector = normalize(ubo.camera_position - fragPosition.xyz);
-    vec3 half_vector = normalize(light_vector + view_vector);
-    float spec_cos = pow(max(dot(half_vector, normal_vector), 0.0), 32.0);
-    vec3 specular = uKs * light_coff * spec_cos;
-    return (diffuse + ambient + specular);
-}
-
-
-bool RayMarch(vec3 ori, vec3 dir, out vec2 hitPosUV) {
-      float step = 0.75;
-
-      for(int i = 0; i < 20; i++) {
-        vec3 pos = ori + i * step * dir;
+      float step_size = 0.2;
+      int total_steps = 200;
+      for(int i = 0; i < total_steps; i++) {
+        vec3 pos = ori + i * step_size * dir;
         vec4 current_coord = ubo.proj * ubo.view * vec4(pos, 1.0);
-        float current_depth = (current_coord.z - ubo.zNear) / (ubo.zFar - ubo.zNear);
-
         vec2 texCoord = current_coord.xy /current_coord.w * 0.5 + 0.5;
-        float record_depth = unpack(texture(gDepthSampler, texCoord ));
+        if(texCoord.x < 0.0 || texCoord.x > 1.0 || texCoord.y < 0.0 || texCoord.y > 1.0){
+            return false;
+        }
 
-        if (abs(current_depth - record_depth - 0.0125) < 0.0075 && (dot(dir,normalize(texture(gNormalSampler, texCoord).xyz)) < 0.3)){
+        float current_depth = (current_coord.z - ubo.zNear) / (ubo.zFar - ubo.zNear);
+        
+        float record_depth = unpack(texture(gDepthSampler, texCoord));
+
+        if ((current_depth - record_depth > 0.004) && (current_depth - record_depth < 0.008) && (dot(dir,normalize(texture(gNormalSampler, texCoord).xyz)) < 0.0)){
             hitPosUV = current_coord.xy /current_coord.w * 0.5 + 0.5;
+            visibility =  (1.0 - pow(float(i) / float(total_steps - 1), 0.5)) *(1.0 - pow(abs(texCoord.x - 0.5) * 2.0, 2.0)) * (1.0 - pow(abs(texCoord.y - 0.5) * 2.0, 2.0));
             return true;
         }
+        else if (current_depth - record_depth > 0.05){
+            return false;
+        }
+        
       }
 
       return false;
 }
+
 
 vec3 EvalDirectionalLight(vec2 uv) {
   vec4 pos = texture(gPositionSampler, uv);
@@ -249,7 +248,7 @@ vec3 EvalDirectionalLight(vec2 uv) {
 
 }
 
-#define SSR_SAMPLE_NUM 10
+#define SSR_SAMPLE_NUM 0
 void main() {
     vec3 view_vector = normalize(ubo.camera_position - fragPosition.xyz);
     vec3 light_vector = normalize(lightPosition.xyz - fragPosition.xyz);
@@ -271,32 +270,22 @@ void main() {
     vec4 shadow_map_coord = vec4(coord.xy * 0.5 + 0.5, (coord.z * lightTexCoord.w - light.zNear) / (light.zFar- light.zNear), coord.w);
     float visibility = PCSS(shadowMapSampler, shadow_map_coord, bias);
     float specular_coff = fresnelSchlick(view_vector, normal_vector);
+    //vec3 specular_coff = uKs;
 
     vec3 half_vector = normalize(light_vector + view_vector);
     float spec_cos = pow(max(dot(half_vector, normal_vector), 0.0), 32.0);
     vec3 diffuse = ubo.light_emit * BSDF * cos;
-    vec3 specular = specular_coff * ubo.light_emit * spec_cos;
-    vec3 Le = (diffuse + specular) * visibility;
-
-    
+    vec3 specular = ubo.light_emit * spec_cos;
+    vec3 Le =  ((1.0 - specular_coff) *diffuse + specular_coff * specular);
     vec3 L_indir = vec3(0.0);
 
-    for(int i = 0; i < SSR_SAMPLE_NUM; i++) {
-        float pdf;
-        vec3 local_dir = SampleHemisphereCos(seed, pdf);
-        vec3 dir = normalize(localToWorld(local_dir, normal_vector));
-        vec2 hitPosUV;
-        if(RayMarch(fragPosition.xyz, dir, hitPosUV)){
-            L_indir += (1.0 - specular_coff)*clamp(EvalDirectionalLight(hitPosUV) * BSDF * max(0.0, dot(normal_vector, dir)) / pdf, vec3(0.0), vec3(1.0));
-        }
+    float specular_visibility;
+    vec2 specular_hitPosUV;
+    vec3 specular_dir = reflectDir(view_vector, normal_vector);
+    if(RayMarch(fragPosition.xyz, specular_dir, specular_hitPosUV, specular_visibility)){
+        L_indir += specular_coff * clamp(EvalDirectionalLight(specular_hitPosUV), vec3(0.0), vec3(1.0)) * specular_visibility;
     }
-    L_indir = L_indir / float(SSR_SAMPLE_NUM);
-
-    vec2 reflect_hitPosUV;
-    vec3 reflect_dir = reflectDir(view_vector, normal_vector);
-    if(RayMarch(fragPosition.xyz, reflect_dir, reflect_hitPosUV))
-        L_indir += specular_coff*clamp(EvalDirectionalLight(reflect_hitPosUV), vec3(0.0), vec3(1.0));
 
     Le += L_indir;
-    outColor = vec4(Le, 1.0);
+    outColor = vec4(Le * visibility, 1.0);
 }

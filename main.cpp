@@ -38,8 +38,8 @@ const uint32_t HEIGHT = 600;
 const uint32_t SHADOW_MAP_WIDTH = 4096;
 const uint32_t SHADOW_MAP_HEIGHT = 4096;
 
-const uint32_t GBUFFER_MAP_WIDTH = 1024;
-const uint32_t GBUFFER_MAP_HEIGHT = 1024;
+const uint32_t GBUFFER_MAP_WIDTH = 2048;
+const uint32_t GBUFFER_MAP_HEIGHT = 2048;
 
 const std::string MODEL_PATH = "models/chairs/Table and Chair set/Table&Chair Set .obj";
 const std::vector<std::string> TEXTURE_PATHS =
@@ -80,14 +80,14 @@ const std::unordered_map<std::string, uint32_t> texMap = {
         {"BackRest.003_Cube.023", -1},
         {"Seat.003_Cube.021", -1},
         {"Plane_Plane.002", 0},
-        {"Plane.001", -1},
-        {"Plane.002_Plane.003", -1},
+        {"Plane.001", 2},
+        {"Plane.002_Plane.003", 2},
 
 };
 
 const std::unordered_map<std::string, glm::vec3> KdMap = {
     {"Glass_border_Cube.005", {1.0f, 1.0f, 1.0f} },
-        {"Glass_Cube.004", {1.0f, 1.0f, 1.0f}},
+        {"Glass_Cube.004", {0.0f, 0.0f, 0.0f}},
         {"Table_Leg.001_Cube.009", {1.0f, 1.0f, 1.0f}},
         {"Table_Leg.002_Cube.010", {1.0f, 1.0f, 1.0f}},
         {"Table_Leg.003_Cube.006",  {1.0f, 1.0f, 1.0f}},
@@ -105,56 +105,56 @@ const std::unordered_map<std::string, glm::vec3> KdMap = {
         {"BackRest.003_Cube.023", {0.8f, 0.0f, 0.0f}},
         {"Seat.003_Cube.021", {0.8f, 0.0f, 0.0f}},
         {"Plane_Plane.002", {1.0f, 1.0f, 1.0f}},
-        {"Plane.001", {1.0f, 1.0f, 1.0f}},
-        {"Plane.002_Plane.003", {1.0f, 1.0f, 1.0f}},
+        {"Plane.001", {0.7f, 1.0f, 0.7f}},
+        {"Plane.002_Plane.003", {0.7f, 1.0f, 0.7f}},
 };
 
 const std::unordered_map<std::string, glm::vec3> KsMap = {
-    {"Glass_border_Cube.005", {0.5f, 0.5f, 0.5f}},
-        {"Glass_Cube.004", {0.5f, 0.5f, 0.5f}},
-        {"Table_Leg.001_Cube.009", {0.5f, 0.5f, 0.5f}},
-        {"Table_Leg.002_Cube.010", {0.5f, 0.5f, 0.5f}},
-        {"Table_Leg.003_Cube.006",  {0.5f, 0.5f, 0.5f}},
-        {"Table_Leg.004_Cube.011", {0.5f, 0.5f, 0.5f}},
-        {"Chair_Cube.007", {0.5f, 0.5f, 0.5f}},
-        {"Seat_Cube.001", {0.5f, 0.5f, 0.5f}},
-        {"BackRest_Cube.008", {0.5f, 0.5f, 0.5f}},
-        {"Chair.001_Cube.015", {0.5f, 0.5f, 0.5f}},
-        {"Seat.001_Cube.016", {0.5f, 0.5f, 0.5f}},
-        {"BackRest.001_Cube.017", {0.5f, 0.5f, 0.5f}},
-        {"Chair.002_Cube.018", {0.5f, 0.5f, 0.5f}},
-        {"Seat.002_Cube.019", {0.5f, 0.5f, 0.5f}},
-        {"BackRest.002_Cube.020", {0.5f, 0.5f, 0.5f}},
-        {"Chair.003_Cube.022", {0.5f, 0.5f, 0.5f}},
-        {"BackRest.003_Cube.023", {0.5f, 0.5f, 0.5f}},
-        {"Seat.003_Cube.021", {0.5f, 0.5f, 0.5f} },
-        {"Plane_Plane.002", {0.5f, 0.5f, 0.5f} },
-        {"Plane.001", {0.5f, 0.5f, 0.5f} },
-        {"Plane.002_Plane.003", {0.5f, 0.5f, 0.5f}},
+    {"Glass_border_Cube.005", {0.6f, 0.6f, 0.6f}},
+        {"Glass_Cube.004", {0.1f, 0.1f, 0.1f}},
+        {"Table_Leg.001_Cube.009", {0.1f, 0.1f, 0.1f}},
+        {"Table_Leg.002_Cube.010",  {0.1f, 0.1f, 0.1f}},
+        {"Table_Leg.003_Cube.006",   {0.1f, 0.1f, 0.1f}},
+        {"Table_Leg.004_Cube.011",  {0.1f, 0.1f, 0.1f}},
+        {"Chair_Cube.007",  {0.1f, 0.1f, 0.1f}},
+        {"Seat_Cube.001",  {0.1f, 0.1f, 0.1f}},
+        {"BackRest_Cube.008",  {0.1f, 0.1f, 0.1f}},
+        {"Chair.001_Cube.015",  {0.1f, 0.1f, 0.1f}},
+        {"Seat.001_Cube.016",  {0.1f, 0.1f, 0.1f}},
+        {"BackRest.001_Cube.017",  {0.1f, 0.1f, 0.1f}},
+        {"Chair.002_Cube.018",  {0.1f, 0.1f, 0.1f}},
+        {"Seat.002_Cube.019",  {0.1f, 0.1f, 0.1f}},
+        {"BackRest.002_Cube.020",  {0.1f, 0.1f, 0.1f}},
+        {"Chair.003_Cube.022",  {0.1f, 0.1f, 0.1f}},
+        {"BackRest.003_Cube.023",  {0.1f, 0.1f, 0.1f}},
+        {"Seat.003_Cube.021",  {0.1f, 0.1f, 0.1f} },
+        {"Plane_Plane.002", {0.6f, 0.6f, 0.6f} },
+        {"Plane.001",  {0.1f, 0.1f, 0.1f} },
+        {"Plane.002_Plane.003",  {0.1f, 0.1f, 0.1f}},
 };
 
 const std::unordered_map<std::string, float> iorMap = {
-    {"Glass_border_Cube.005", 1.5},
-        {"Glass_Cube.004", 2.00},
-        {"Table_Leg.001_Cube.009", 1.10},
-        {"Table_Leg.002_Cube.010", 1.10},
-        {"Table_Leg.003_Cube.006",  1.10},
-        {"Table_Leg.004_Cube.011", 1.10},
-        {"Chair_Cube.007", 1.85},
+    {"Glass_border_Cube.005", 1.50},
+        {"Glass_Cube.004", 5.50},
+        {"Table_Leg.001_Cube.009", 1.25},
+        {"Table_Leg.002_Cube.010", 1.25},
+        {"Table_Leg.003_Cube.006",  1.25},
+        {"Table_Leg.004_Cube.011", 1.25},
+        {"Chair_Cube.007", 1.25},
         {"Seat_Cube.001", 1.25},
         {"BackRest_Cube.008", 1.25},
-        {"Chair.001_Cube.015", 1.85},
+        {"Chair.001_Cube.015", 1.25},
         {"Seat.001_Cube.016", 1.25},
         {"BackRest.001_Cube.017", 1.25},
-        {"Chair.002_Cube.018", 1.85},
+        {"Chair.002_Cube.018", 1.25},
         {"Seat.002_Cube.019", 1.25},
         {"BackRest.002_Cube.020", 1.25},
-        {"Chair.003_Cube.022", 1.85},
+        {"Chair.003_Cube.022", 1.25},
         {"BackRest.003_Cube.023", 1.25},
         {"Seat.003_Cube.021", 1.25},
-        {"Plane_Plane.002", 2.00 },
-        {"Plane.001", 1.85 },
-        {"Plane.002_Plane.003", 1.85},
+        {"Plane_Plane.002",5.50 },
+        {"Plane.001", 1.50 },
+        {"Plane.002_Plane.003",1.50},
 };
 
 #ifdef NDEBUG
@@ -289,7 +289,7 @@ public:
 
 private:
     GLFWwindow* window;
-    glm::vec3 camera_position = { 0.0f, 20.0f, 30.0f };
+    glm::vec3 camera_position = { 0.0f, 10.0f, 20.0f };
     glm::vec3 orignal_focal = { 0.0f, 10.0f, 0.0f };
     glm::vec3 focal = { 0.0f, 10.0f, 0.0f };
     glm::vec2 pos_pressed;
@@ -455,40 +455,40 @@ private:
             switch (key)
             {
             case GLFW_KEY_A:
-                if (myEngine->camera_position.x - right.x > -40.0f &&
-                    myEngine->camera_position.x - right.x < 30.0f &&
-                    myEngine->camera_position.z - right.z > 0.0f &&
-                    myEngine->camera_position.z - right.z < 40.0f) {
+                if (myEngine->camera_position.x - right.x > -20.0f &&
+                    myEngine->camera_position.x - right.x < 20.0f &&
+                    myEngine->camera_position.z - right.z > 15.0f &&
+                    myEngine->camera_position.z - right.z < 30.0f) {
                     myEngine->camera_position -= right;
                     myEngine->focal -= right;
                     myEngine->orignal_focal -= right;
                 }
                 break;
             case GLFW_KEY_D:
-                if (myEngine->camera_position.x + right.x > -40.0f &&
-                    myEngine->camera_position.x + right.x < 30.0f &&
-                    myEngine->camera_position.z + right.z > 0.0f &&
-                    myEngine->camera_position.z + right.z < 40.0f) {
+                if (myEngine->camera_position.x + right.x > -20.0f &&
+                    myEngine->camera_position.x + right.x < 20.0f &&
+                    myEngine->camera_position.z + right.z > 15.0f &&
+                    myEngine->camera_position.z + right.z < 30.0f) {
                     myEngine->camera_position += right;
                     myEngine->focal += right;
                     myEngine->orignal_focal += right;
                 }
                 break;
             case GLFW_KEY_W:
-                if (myEngine->camera_position.x + forward.x > -40.0f &&
-                    myEngine->camera_position.x + forward.x < 30.0f &&
-                    myEngine->camera_position.z + forward.z > 0.0f &&
-                    myEngine->camera_position.z + forward.z < 40.0f) {
+                if (myEngine->camera_position.x + forward.x > -20.0f &&
+                    myEngine->camera_position.x + forward.x < 20.0f &&
+                    myEngine->camera_position.z + forward.z > 15.0f &&
+                    myEngine->camera_position.z + forward.z < 30.0f) {
                     myEngine->camera_position += forward;
                     myEngine->focal += forward;
                     myEngine->orignal_focal += forward;
                 }
                 break;
             case GLFW_KEY_S:
-                if (myEngine->camera_position.x - forward.x > -40.0f &&
-                    myEngine->camera_position.x - forward.x < 30.0f &&
-                    myEngine->camera_position.z - forward.z > 0.0f &&
-                    myEngine->camera_position.z - forward.z < 40.0f) {
+                if (myEngine->camera_position.x - forward.x > -20.0f &&
+                    myEngine->camera_position.x - forward.x < 20.0f &&
+                    myEngine->camera_position.z - forward.z > 15.0f &&
+                    myEngine->camera_position.z - forward.z < 30.0f) {
                     myEngine->camera_position -= forward;
                     myEngine->focal -= forward;
                     myEngine->orignal_focal -= forward;
@@ -530,8 +530,8 @@ private:
             if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset > 45.0f) {
                 myEngine->horizatal_angle_offset = 45.0f - myEngine->horizatal_angle;
             }
-            else if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset < -30.0f) {
-                myEngine->horizatal_angle_offset = -30.0f - myEngine->horizatal_angle;
+            else if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset < -45.0f) {
+                myEngine->horizatal_angle_offset = -45.0f - myEngine->horizatal_angle;
             }
 
 
@@ -3170,7 +3170,7 @@ private:
         ubo.camera_position = camera_position;
         ubo.light_emit = { 1000.0f,1000.0f,1000.0f };
         if (render_mode == SSR) {
-            ubo.light_emit = { 1.5f, 1.5f, 1.5f };
+            ubo.light_emit = { 2.5f, 2.5f, 2.5f };
         }
         memcpy(shadowMapUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
@@ -3197,7 +3197,7 @@ private:
         ubo.light_position = { -120.0f,140.0f,80.0f };
         ubo.light_emit = { 1000.0f,1000.0f,1000.0f };
         if (render_mode == SSR) {
-            ubo.light_emit = { 1.5f, 1.5f, 1.5f };
+            ubo.light_emit = { 2.0f, 2.0f, 2.0f };
         }
 
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
