@@ -152,7 +152,7 @@ const std::unordered_map<std::string, float> iorMap = {
         {"Chair.003_Cube.022", 1.25},
         {"BackRest.003_Cube.023", 1.25},
         {"Seat.003_Cube.021", 1.25},
-        {"Plane_Plane.002",5.50 },
+        {"Plane_Plane.002",3.50 },
         {"Plane.001", 1.50 },
         {"Plane.002_Plane.003",1.50},
 };
