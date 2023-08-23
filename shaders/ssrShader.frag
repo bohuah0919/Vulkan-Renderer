@@ -47,7 +47,7 @@ layout(set = 1, binding = 4) uniform sampler2D gDepthSampler;
 
 #define PI 3.141592653589793
 #define NUM_SAMPLES 20
-#define LIGHT_SIZE 0.004
+#define LIGHT_SIZE 0.002
 
 float rand_1to1(float x) { 
   return fract(sin(x)*10000.0);
@@ -173,7 +173,7 @@ float sampleShadowMap(sampler2D shadowMapSampler, vec4 shadow_map_coord, float b
     float visibility = 1.0;
 
     if (unpack(texture(shadowMapSampler, shadow_map_coord.xy)) < (shadow_map_coord.z - bias))
-        visibility = 0.2;
+        visibility = 0.0;
 
     return visibility;
 }
@@ -206,7 +206,7 @@ float PCSS(sampler2D shadowMapSampler, vec4 shadow_map_coord, float bias){
 bool RayMarch(vec3 ori, vec3 dir, out vec2 hitPosUV, out float visibility) {
 
       float step_size = 0.2;
-      int total_steps = 200;
+      int total_steps = 50;
       for(int i = 0; i < total_steps; i++) {
         vec3 pos = ori + i * step_size * dir;
         vec4 current_coord = ubo.proj * ubo.view * vec4(pos, 1.0);
@@ -221,7 +221,7 @@ bool RayMarch(vec3 ori, vec3 dir, out vec2 hitPosUV, out float visibility) {
 
         if ((current_depth - record_depth > 0.004) && (current_depth - record_depth < 0.008) && (dot(dir,normalize(texture(gNormalSampler, texCoord).xyz)) < 0.0)){
             hitPosUV = current_coord.xy /current_coord.w * 0.5 + 0.5;
-            visibility =  (1.0 - pow(float(i) / float(total_steps - 1), 0.5)) *(1.0 - pow(abs(texCoord.x - 0.5) * 2.0, 2.0)) * (1.0 - pow(abs(texCoord.y - 0.5) * 2.0, 2.0));
+            visibility =  (1.0 - pow(float(i) / float(total_steps - 1), 5.0)) *(1.0 - pow(abs(texCoord.x - 0.5) * 2.0, 2.0)) * (1.0 - pow(abs(texCoord.y - 0.5) * 2.0, 2.0));
             return true;
         }
         else if (current_depth - record_depth > 0.05){
@@ -244,7 +244,7 @@ vec3 EvalDirectionalLight(vec2 uv) {
 
   float visibility = texture(gVisibilitySampler, uv).x;
 
-  return ubo.light_emit * BSDF * cos * visibility;
+  return ubo.light_emit * BSDF * cos * visibility + texture(gColorSampler, uv).xyz * 0.2;
 
 }
 
@@ -257,12 +257,12 @@ void main() {
 
     float bias = max(0.005 * (1.0 - cos), 0.004); 
 
-    vec3 BSDF;
+    vec3 color, BSDF;
     if (fragTexIdx >= 0)
-        BSDF = texture(texSampler[fragTexIdx], fragTexCoord).xyz;
+        color = texture(texSampler[fragTexIdx], fragTexCoord).xyz;
     else
-        BSDF = fragColor ;
-    BSDF = BSDF / PI;
+        color = fragColor ;
+    BSDF = color / PI;
 
     float seed = rand_2to1(gl_FragCoord.xy);
 
@@ -276,7 +276,7 @@ void main() {
     float spec_cos = pow(max(dot(half_vector, normal_vector), 0.0), 32.0);
     vec3 diffuse = ubo.light_emit * BSDF * cos;
     vec3 specular = ubo.light_emit * spec_cos;
-    vec3 Le =  ((1.0 - specular_coff) *diffuse + specular_coff * specular);
+    vec3 Le =  (1.0 - specular_coff) *diffuse + specular_coff * specular;
     vec3 L_indir = vec3(0.0);
 
     float specular_visibility;
@@ -287,5 +287,5 @@ void main() {
     }
 
     Le += L_indir;
-    outColor = vec4(Le * visibility, 1.0);
+    outColor = vec4(Le * visibility + color * 0.2, 1.0);
 }

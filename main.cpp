@@ -135,7 +135,7 @@ const std::unordered_map<std::string, glm::vec3> KsMap = {
 
 const std::unordered_map<std::string, float> iorMap = {
     {"Glass_border_Cube.005", 1.50},
-        {"Glass_Cube.004", 5.50},
+        {"Glass_Cube.004", 7.50},
         {"Table_Leg.001_Cube.009", 1.25},
         {"Table_Leg.002_Cube.010", 1.25},
         {"Table_Leg.003_Cube.006",  1.25},
@@ -152,9 +152,9 @@ const std::unordered_map<std::string, float> iorMap = {
         {"Chair.003_Cube.022", 1.25},
         {"BackRest.003_Cube.023", 1.25},
         {"Seat.003_Cube.021", 1.25},
-        {"Plane_Plane.002",3.50 },
-        {"Plane.001", 1.50 },
-        {"Plane.002_Plane.003",1.50},
+        {"Plane_Plane.002",1.0 },
+        {"Plane.001", 1.0 },
+        {"Plane.002_Plane.003",1.0},
 };
 
 #ifdef NDEBUG
@@ -289,7 +289,7 @@ public:
 
 private:
     GLFWwindow* window;
-    glm::vec3 camera_position = { 0.0f, 10.0f, 20.0f };
+    glm::vec3 camera_position = { 0.0f, 10.0f, 30.0f };
     glm::vec3 orignal_focal = { 0.0f, 10.0f, 0.0f };
     glm::vec3 focal = { 0.0f, 10.0f, 0.0f };
     glm::vec2 pos_pressed;
@@ -455,40 +455,40 @@ private:
             switch (key)
             {
             case GLFW_KEY_A:
-                if (myEngine->camera_position.x - right.x > -20.0f &&
+                if (myEngine->camera_position.x - right.x > -40.0f &&
                     myEngine->camera_position.x - right.x < 20.0f &&
-                    myEngine->camera_position.z - right.z > 15.0f &&
-                    myEngine->camera_position.z - right.z < 30.0f) {
+                    myEngine->camera_position.z - right.z > 10.0f &&
+                    myEngine->camera_position.z - right.z < 45.0f) {
                     myEngine->camera_position -= right;
                     myEngine->focal -= right;
                     myEngine->orignal_focal -= right;
                 }
                 break;
             case GLFW_KEY_D:
-                if (myEngine->camera_position.x + right.x > -20.0f &&
+                if (myEngine->camera_position.x + right.x > -40.0f &&
                     myEngine->camera_position.x + right.x < 20.0f &&
-                    myEngine->camera_position.z + right.z > 15.0f &&
-                    myEngine->camera_position.z + right.z < 30.0f) {
+                    myEngine->camera_position.z + right.z > 10.0f &&
+                    myEngine->camera_position.z + right.z < 45.0f) {
                     myEngine->camera_position += right;
                     myEngine->focal += right;
                     myEngine->orignal_focal += right;
                 }
                 break;
             case GLFW_KEY_W:
-                if (myEngine->camera_position.x + forward.x > -20.0f &&
+                if (myEngine->camera_position.x + forward.x > -40.0f &&
                     myEngine->camera_position.x + forward.x < 20.0f &&
-                    myEngine->camera_position.z + forward.z > 15.0f &&
-                    myEngine->camera_position.z + forward.z < 30.0f) {
+                    myEngine->camera_position.z + forward.z > 10.0f &&
+                    myEngine->camera_position.z + forward.z < 45.0f) {
                     myEngine->camera_position += forward;
                     myEngine->focal += forward;
                     myEngine->orignal_focal += forward;
                 }
                 break;
             case GLFW_KEY_S:
-                if (myEngine->camera_position.x - forward.x > -20.0f &&
+                if (myEngine->camera_position.x - forward.x > -40.0f &&
                     myEngine->camera_position.x - forward.x < 20.0f &&
-                    myEngine->camera_position.z - forward.z > 15.0f &&
-                    myEngine->camera_position.z - forward.z < 30.0f) {
+                    myEngine->camera_position.z - forward.z > 10.0f &&
+                    myEngine->camera_position.z - forward.z < 45.0f) {
                     myEngine->camera_position -= forward;
                     myEngine->focal -= forward;
                     myEngine->orignal_focal -= forward;
@@ -527,11 +527,11 @@ private:
             myEngine->horizatal_angle_offset = (myEngine->pos_pressed.x - xpos) * 45.0f / (float)myEngine->swapChainExtent.width;
             myEngine->vertical_angle_offset = (myEngine->pos_pressed.y - ypos) * 45.0f / (float)myEngine->swapChainExtent.height;
 
-            if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset > 45.0f) {
-                myEngine->horizatal_angle_offset = 45.0f - myEngine->horizatal_angle;
+            if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset > 90.0f) {
+                myEngine->horizatal_angle_offset = 90.0f - myEngine->horizatal_angle;
             }
-            else if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset < -45.0f) {
-                myEngine->horizatal_angle_offset = -45.0f - myEngine->horizatal_angle;
+            else if (myEngine->horizatal_angle + myEngine->horizatal_angle_offset < -90.0f) {
+                myEngine->horizatal_angle_offset = -90.0f - myEngine->horizatal_angle;
             }
 
 
@@ -3170,7 +3170,7 @@ private:
         ubo.camera_position = camera_position;
         ubo.light_emit = { 1000.0f,1000.0f,1000.0f };
         if (render_mode == SSR) {
-            ubo.light_emit = { 2.5f, 2.5f, 2.5f };
+            ubo.light_emit = { 1.5f, 1.5f, 1.5f };
         }
         memcpy(shadowMapUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
@@ -3192,12 +3192,13 @@ private:
         ubo.zFar = 100.0f;
         ubo.camera_position = camera_position;
         ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(60.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.model = glm::mat4(1.0f);
         ubo.view = glm::lookAt(ubo.camera_position, focal, glm::vec3(0.0f, 1.0f, 0.0f));
         ubo.proj = clip * glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, ubo.zNear, ubo.zFar);
         ubo.light_position = { -120.0f,140.0f,80.0f };
         ubo.light_emit = { 1000.0f,1000.0f,1000.0f };
         if (render_mode == SSR) {
-            ubo.light_emit = { 2.0f, 2.0f, 2.0f };
+            ubo.light_emit = { 1.0f, 1.0f, 1.0f };
         }
 
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
