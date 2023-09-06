@@ -8,8 +8,7 @@ Render a chairs and table set.
 This project uses Vulkan, GLFW, and glm.
 
 # Rescoure
-model: https://www.cgtrader.com/free-3d-models/furniture/furniture-set/dinning-table-set-3d-model
-
-code: extented from https://vulkan-tutorial.com
+model: https://www.cgtrader.com/free-3d-models/furniture/furniture-set/dinning-table-set-3d-model.
+code: extented from https://vulkan-tutorial.com.
 # License
 MIT License
